@@ -17,14 +17,14 @@ class ChangelogObserver
                 \Change::begin("Create");
                 if ($record->refColumn && !$record->_changeSecondary):
                     foreach ($record->refColumn as $col):
-                        $data[$col] = $record->{$col};
+                        if ($record->{$col} != '')
+                            $data[$col] = $record->{$col};
                     endforeach;
                     \Change::setColsaved(serialize($data));
                     \Change::validChange();
                 endif;
             endif;
             // $record->{$record->getChangeIDColumn()} = \Change::getChangeID();
-
         }
     }
 
