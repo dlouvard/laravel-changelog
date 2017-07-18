@@ -15,8 +15,8 @@ class ChangelogObserver
                 \Change::validChange();
             else:
                 \Change::begin("Create");
-                if ($record->refColumnDelete && !$record->_changeSecondary):
-                    foreach ($record->refColumnDelete as $col):
+                if ($record->refColumn && !$record->_changeSecondary):
+                    foreach ($record->refColumn as $col):
                         $data[$col] = $record->{$col};
                     endforeach;
                     \Change::setColsaved(serialize($data));
@@ -41,10 +41,10 @@ class ChangelogObserver
     {
         if (auth()->check()):
             \Change::begin("Delete");
-            if (!$record->refColumnDelete)
+            if (!$record->refColumn)
                 throw new ChangelogException('No column referenced');
 
-            foreach ($record->refColumnDelete as $col):
+            foreach ($record->refColumn as $col):
                 $data[$col] = $record->{$col};
             endforeach;
             \Change::setColsaved(serialize($data));
