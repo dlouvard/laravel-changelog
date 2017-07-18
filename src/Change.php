@@ -16,8 +16,10 @@ class Change
 {
     protected $_change = null;
     protected $_contextID = null;
+    protected $_contextModel = null;
     protected $_connection = null;
     protected $_validChange = false;
+    protected $_colsaved = null;
 
 
     protected function getAuthID()
@@ -51,29 +53,31 @@ class Change
      * @param string|null $notes A string describing the intended change in more details. eg. "Putting widget in a box", "Placing an order", etc.
      * @param bool $useTransaction Whether or not to begin a transaction as well. Only one transaction exist at a time using this method.
      */
-    public function begin(string $interface = null, string $notes = null, $useTransaction = true)
+    public function begin(string $interface = null,string $notes = null)
     {
         if ($this->_change)
             throw new ChangelogException('Cannot begin a change because one is already in progress.');
-
-
         $this->_change = new ChangeModel();
         $this->_change->user_id = $this->getAuthID();
         $this->_change->interface = $interface;
         $this->_change->notes = $notes;
         $this->_change->status = 'pending';
-        $this->_change->save();
-
-        if ($useTransaction) {
-            DB::connection($this->_connection)->beginTransaction();
-            $this->_inTransaction = true;
-        }
+        //$this->_change->save();
     }
 
     public function setContextID($id)
     {
-
         $this->_contextID = $id;
+    }
+
+    public function setContextModel($record)
+    {
+        $this->_contextModel = explode('\\', get_class($record))[2];
+    }
+
+    public function setColsaved($note)
+    {
+        $this->_colsaved = $note;
     }
 
     /**
@@ -85,16 +89,15 @@ class Change
     {
         if (!$this->_change)
             throw new ChangelogException('Cannot commit a change because there is no change in progress');
-
         $this->_change->status = 'complete';
         $this->_change->context_id = $this->_contextID;
+        $this->_change->context_model = $this->_contextModel;
+        $this->_change->colsaved = $this->_colsaved;
         $this->_change->save();
-        if ($this->_inTransaction)
-        {
-            DB::connection($this->_connection)->commit();
-            $this->_inTransaction = false;
-        }
-
+        if(!$this->_validChange)
+            $this->_change->delete();
+        $this->_colsaved = null;
+        $this->_validChange = false;
         $this->_change = null;
     }
 }

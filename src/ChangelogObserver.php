@@ -7,20 +7,55 @@ class ChangelogObserver
 
     public function saving($record)
     {
-        if ($record->isDirty())
-        {
-            $record->{$record->getChangeIDColumn()} = \Change::getChangeID();
+        if ($record->isDirty()) {
+            if ($record->id):
+                \Change::begin("Update");
+                \Change::setColsaved(serialize($record->getDirty()));
+            else:
+                \Change::begin("Create");
+                if ($record->refColumnDelete):
+                    foreach ($record->refColumnDelete as $col):
+                        $data[$col] = $record->{$col};
+                    endforeach;
+                    \Change::setColsaved(serialize($data));
+                endif;
+            endif;
+           // $record->{$record->getChangeIDColumn()} = \Change::getChangeID();
             \Change::setContextID($record->id);
-            if (!$record->{$record->getChangeIDColumn()} && $record->getForceChangeLogging())
-            {
-                throw new ChangelogException('Cannot save this model outside of a change log (because forceChangeLogging is enabled). Start a new change with Change::begin() first.');
-            }
+            \Change::validChange();
+
         }
     }
 
     public function saved($record)
     {
-        \Change::setContextID($record->id);
+        if ($record->isDirty()):
+            \Change::setContextModel($record);
+            \Change::setContextID($record->id);
+            \Change::commit();
+        endif;
     }
 
+    public
+    function deleting($record)
+    {
+        \Change::begin("Delete");
+        if (!$record->refColumnDelete)
+            throw new ChangelogException('No column referenced');
+
+        foreach ($record->refColumnDelete as $col):
+            $data[$col] = $record->{$col};
+        endforeach;
+        \Change::setColsaved(serialize($data));
+        \Change::setContextModel($record);
+        \Change::getChangeID();
+        \Change::setContextID($record->id);
+        \Change::validChange();
+    }
+
+    public
+    function deleted($record)
+    {
+        \Change::commit();
+    }
 }

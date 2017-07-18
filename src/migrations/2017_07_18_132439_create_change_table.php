@@ -16,7 +16,10 @@ class CreateChangeTable extends Migration
             $table->increments('id');
             $table->timestamps();
             $table->unsignedInteger('user_id')->nullable();
+            $table->unsignedInteger('context_id')->nullable();
+            $table->string('context_model')->nullable();
             $table->string('interface', 127)->nullable();
+            $table->longText('colsaved')->nullable();
             $table->string('notes', 255)->nullable();
             $table->enum('status', ['pending', 'complete', 'failed'])->default('pending');
             $table->index('status');
