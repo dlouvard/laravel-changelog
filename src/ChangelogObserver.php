@@ -7,7 +7,7 @@ class ChangelogObserver
 
     public function saving($record)
     {
-        if ($record->isDirty()) {
+        if ($record->isDirty() && auth()->check()) {
             if ($record->id):
                 \Change::begin("Update");
                 \Change::setColsaved(serialize($record->getDirty()));
@@ -20,7 +20,7 @@ class ChangelogObserver
                     \Change::setColsaved(serialize($data));
                 endif;
             endif;
-           // $record->{$record->getChangeIDColumn()} = \Change::getChangeID();
+            // $record->{$record->getChangeIDColumn()} = \Change::getChangeID();
             \Change::setContextID($record->id);
             \Change::validChange();
 
@@ -29,7 +29,7 @@ class ChangelogObserver
 
     public function saved($record)
     {
-        if ($record->isDirty()):
+        if ($record->isDirty() && auth()->check()):
             \Change::setContextModel($record);
             \Change::setContextID($record->id);
             \Change::commit();
@@ -39,23 +39,27 @@ class ChangelogObserver
     public
     function deleting($record)
     {
-        \Change::begin("Delete");
-        if (!$record->refColumnDelete)
-            throw new ChangelogException('No column referenced');
+        if (auth()->check()):
+            \Change::begin("Delete");
+            if (!$record->refColumnDelete)
+                throw new ChangelogException('No column referenced');
 
-        foreach ($record->refColumnDelete as $col):
-            $data[$col] = $record->{$col};
-        endforeach;
-        \Change::setColsaved(serialize($data));
-        \Change::setContextModel($record);
-        \Change::getChangeID();
-        \Change::setContextID($record->id);
-        \Change::validChange();
+            foreach ($record->refColumnDelete as $col):
+                $data[$col] = $record->{$col};
+            endforeach;
+            \Change::setColsaved(serialize($data));
+            \Change::setContextModel($record);
+            \Change::getChangeID();
+            \Change::setContextID($record->id);
+            \Change::validChange();
+        endif;
     }
 
     public
     function deleted($record)
     {
-        \Change::commit();
+        if (auth()->check()):
+            \Change::commit();
+        endif;
     }
 }

@@ -89,6 +89,8 @@ class Change
     {
         if (!$this->_change)
             throw new ChangelogException('Cannot commit a change because there is no change in progress');
+
+
         $this->_change->status = 'complete';
         $this->_change->context_id = $this->_contextID;
         $this->_change->context_model = $this->_contextModel;
