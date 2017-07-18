@@ -29,7 +29,7 @@ class ChangelogServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        $this->mergeConfigFrom(__DIR__ . 'config/changelog.php', 'changelog');
+        $this->mergeConfigFrom(__DIR__ . '/config/changelog.php', 'changelog');
         $this->app->singleton('Change', function ($app) {
             return new \Dlouvard\Changelog\Change();
         });

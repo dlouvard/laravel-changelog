@@ -1,8 +1,10 @@
 <?php
 
-namespace DLouvard\Changelog;
+namespace Dlouvard\Changelog;
 
+use Dlouvard\Changelog\Exceptions\ChangelogException;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 /**
  * Created by PhpStorm.
@@ -13,11 +15,34 @@ use Illuminate\Support\Facades\Auth;
 class Change
 {
     protected $_change = null;
+    protected $_contextID = null;
+    protected $_connection = null;
+    protected $_validChange = false;
+
 
     protected function getAuthID()
     {
         return Auth::id();
     }
+
+    /**
+     * Returns the ID of the change in progress (or null if there is no change in progress)
+     *
+     * @return null|int The ID of the change in progress (or null if one does not exist)
+     */
+    public function getChangeID()
+    {
+        if ($this->_change)
+            return $this->_change->id;
+
+        return null;
+    }
+
+    public function validChange()
+    {
+        $this->_validChange = true;
+    }
+
 
     /**
      * Begins a change (and optionally a transaction as well)
@@ -39,11 +64,16 @@ class Change
         $this->_change->status = 'pending';
         $this->_change->save();
 
-        if ($useTransaction)
-        {
+        if ($useTransaction) {
             DB::connection($this->_connection)->beginTransaction();
             $this->_inTransaction = true;
         }
+    }
+
+    public function setContextID($id)
+    {
+
+        $this->_contextID = $id;
     }
 
     /**
@@ -57,8 +87,8 @@ class Change
             throw new ChangelogException('Cannot commit a change because there is no change in progress');
 
         $this->_change->status = 'complete';
+        $this->_change->context_id = $this->_contextID;
         $this->_change->save();
-
         if ($this->_inTransaction)
         {
             DB::connection($this->_connection)->commit();

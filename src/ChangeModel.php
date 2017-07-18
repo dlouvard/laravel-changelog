@@ -6,7 +6,7 @@
  * Time: 11:02
  */
 
-namespace DLouvard\Changelog;
+namespace Dlouvard\Changelog;
 
 
 use Illuminate\Database\Eloquent\Model;

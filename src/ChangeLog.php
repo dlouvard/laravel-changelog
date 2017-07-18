@@ -6,7 +6,7 @@
  * Time: 11:16
  */
 
-namespace DLouvard\Changelog;
+namespace Dlouvard\Changelog;
 
 
 trait Changelog
