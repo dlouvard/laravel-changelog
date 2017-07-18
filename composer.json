@@ -23,14 +23,9 @@
     },
     "autoload": {
         "psr-4": {
-            "Dlouvard\\Changelog\\": "src"
+            "Dlouvard\\Changelog\\": "src/"
         }
     },
-	"autoload-dev": {
-		"psr-4": {
-			"Dlouvard\\Changelog\\Test\\": "tests"
-		}
-	},
     "scripts": {
     }
 }
