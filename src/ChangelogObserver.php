@@ -11,18 +11,19 @@ class ChangelogObserver
             if ($record->id):
                 \Change::begin("Update");
                 \Change::setColsaved(serialize($record->getDirty()));
+                \Change::setContextID($record->id);
+                \Change::validChange();
             else:
                 \Change::begin("Create");
-                if ($record->refColumnDelete):
+                if ($record->refColumnDelete && !$record->_changeSecondary):
                     foreach ($record->refColumnDelete as $col):
                         $data[$col] = $record->{$col};
                     endforeach;
                     \Change::setColsaved(serialize($data));
+                    \Change::validChange();
                 endif;
             endif;
             // $record->{$record->getChangeIDColumn()} = \Change::getChangeID();
-            \Change::setContextID($record->id);
-            \Change::validChange();
 
         }
     }
@@ -36,8 +37,7 @@ class ChangelogObserver
         endif;
     }
 
-    public
-    function deleting($record)
+    public function deleting($record)
     {
         if (auth()->check()):
             \Change::begin("Delete");
@@ -55,8 +55,7 @@ class ChangelogObserver
         endif;
     }
 
-    public
-    function deleted($record)
+    public function deleted($record)
     {
         if (auth()->check()):
             \Change::commit();
