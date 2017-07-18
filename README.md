@@ -14,7 +14,7 @@ Log each event of creating,saving,deleting for the model choosing.
 You will have user_id, model context, id of model event, information of data modified
 
 <a id="installation"></a>
-##Installation
+## Installation
 
 In your project base directory run
 
@@ -24,7 +24,7 @@ To bring up the config file run, if you want to customize
 
 	php artisan vendor:publish
 	
-##Important
+## Important
 	Configuration of config/changelog.php to choose which table was impacted
 	then:
 	php artisan migrate
